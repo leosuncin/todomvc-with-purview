@@ -1,0 +1,32 @@
+{
+  "name": "todomvc-with-purview",
+  "version": "1.0.0",
+  "description": "TodoMVC made with Purview",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsnd --respawn src/server.tsx",
+    "start": "node .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leosuncin/todomvc-with-purview.git"
+  },
+  "keywords": ["TodoMVC", "SSR", "Purview", "Express"],
+  "author": "Jaime Leonardo Suncin Cruz <leosuncin@gmail.com> (https://leosuncin.github.io)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/leosuncin/todomvc-with-purview/issues"
+  },
+  "homepage": "https://github.com/leosuncin/todomvc-with-purview#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "purview": "^0.4.8"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.9",
+    "ts-node-dev": "^1.0.0",
+    "typescript": "^4.1.2"
+  }
+}
