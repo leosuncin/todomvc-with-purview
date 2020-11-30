@@ -1,9 +1,14 @@
+import 'reflect-metadata';
 import express from 'express';
 import http from 'http';
+import { tmpdir } from 'os';
 import Purview from 'purview';
+import { createConnection } from 'typeorm';
 
+import { Todo } from './entities/todo.entity';
 import TodoView from './views/todo.view';
 
+const devMode = process.env.NODE_ENV != 'production';
 const port = process.env.PORT ?? 8000;
 const app = express();
 const server = http.createServer(app);
@@ -31,4 +36,22 @@ app.get('/script.js', (_, res: express.Response): void =>
 Purview.handleWebSocket(server, {
   origin: `http://localhost:${port}`,
 });
-server.listen(port, () => console.log(`Listening on localhost:${port}`));
+
+async function startServer(): Promise<void> {
+  try {
+    await createConnection({
+      type: 'sqlite',
+      database: tmpdir() + '/todos.db',
+      synchronize: devMode,
+      logging: devMode,
+      entities: [Todo],
+    });
+
+    server.listen(port, () => console.log(`Listening on localhost:${port}`));
+  } catch (error) {
+    console.error('TypeORM connection error:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
