@@ -20,9 +20,16 @@ app.get('/', async (req: express.Request, res: express.Response): Promise<void> 
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>TodoMVC with Purview</title>
+    <link rel="stylesheet" href="https://unpkg.com/todomvc-common@1.0.5/base.css" />
+    <link rel="stylesheet" href="https://unpkg.com/todomvc-app-css@2.3.0/index.css" />
   </head>
   <body>
     ${await Purview.render(<TodoView />, req)}
+    <footer class="info">
+			<p>Double-click to edit a todo</p>
+			<p>Created by <a href="https://leosuncin.github.io">Jaime Suncin</a></p>
+			<p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+		</footer>
     <script src="/script.js"></script>
   </body>
 </html>`);
