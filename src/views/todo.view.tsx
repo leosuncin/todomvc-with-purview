@@ -1,7 +1,8 @@
 import Purview, { SubmitEvent } from 'purview';
 
-import { TodoService } from '../services/todo.service';
+import TodoItem from '../components/todo-item.component';
 import type { Todo } from '../entities/todo.entity';
+import { TodoService } from '../services/todo.service';
 
 interface TodoMVCProps {}
 interface TodoState {
@@ -27,7 +28,7 @@ class TodoMVC extends Purview.Component<TodoMVCProps, TodoState> {
     }
   }
 
-  async addTodoHandler(event: SubmitEvent): Promise<void> {
+  private async addTodoHandler(event: SubmitEvent): Promise<void> {
     try {
       const todo = await this.service.addTodo(
         event.fields as Pick<Todo, 'title'>,
@@ -37,6 +38,33 @@ class TodoMVC extends Purview.Component<TodoMVCProps, TodoState> {
       });
     } catch (error) {
       console.error('addTodoHandler', error);
+    }
+  }
+
+  private async updateTodoHandler(
+    todo: Todo,
+    updates: Partial<Pick<Todo, 'title' | 'completed'>>,
+  ): Promise<void> {
+    try {
+      const _todo = await this.service.updateTodo(todo, updates);
+      this.setState({
+        todos: this.state.todos.map((todo) =>
+          todo.id === _todo.id ? _todo : todo,
+        ),
+      });
+    } catch (error) {
+      console.error('updateTodoHandler', error);
+    }
+  }
+
+  private async removeTodoHandler(todo: Todo): Promise<void> {
+    try {
+      const _todo = await this.service.removeTodo(todo);
+      this.setState({
+        todos: this.state.todos.filter((todo) => todo.id !== _todo.id),
+      });
+    } catch (error) {
+      console.error('removeTodoHandler', error);
     }
   }
 
@@ -69,21 +97,14 @@ class TodoMVC extends Purview.Component<TodoMVCProps, TodoState> {
           <label htmlFor="toggle-all">Mark all as complete</label>
           <ul class="todo-list">
             {todos.map((todo) => (
-              <li
-                key={todo.id}
-                class={todo.completed ? 'completed' : undefined}
-              >
-                <div class="view">
-                  <input
-                    class="toggle"
-                    type="checkbox"
-                    checked={todo.completed}
-                  />
-                  <label>{todo.title}</label>
-                  <button class="destroy"></button>
-                </div>
-                <input class="edit" defaultValue={todo.title} />
-              </li>
+              <TodoItem
+                todo={todo}
+                onToggle={(completed) =>
+                  this.updateTodoHandler(todo, { completed })
+                }
+                onDestroy={this.removeTodoHandler.bind(this, todo)}
+                onEdit={(title) => this.updateTodoHandler(todo, { title })}
+              />
             ))}
           </ul>
         </section>
@@ -93,9 +114,7 @@ class TodoMVC extends Purview.Component<TodoMVCProps, TodoState> {
           </span>
           <ul class="filters">
             <li>
-              <a class="selected" href="#/">
-                All
-              </a>
+              <a class="selected">All</a>
             </li>
             <li>
               <a href="#/active">Active</a>

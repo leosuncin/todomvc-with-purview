@@ -20,6 +20,20 @@ export class TodoService {
     return this.repository.find({ order: { createdAt: 'ASC' } });
   }
 
+  async updateTodo(
+    todo: Todo,
+    updates: Partial<Pick<Todo, 'title' | 'completed'>>,
+  ): Promise<Todo> {
+    todo.title = updates.title || todo.title;
+    todo.completed = updates.completed ?? todo.completed;
+
+    return this.repository.save(todo);
+  }
+
+  async removeTodo(todo: Todo): Promise<Todo> {
+    return this.repository.remove(todo);
+  }
+
   static getInstance(): Readonly<TodoService> {
     if (!this.instance) {
       this.instance = new TodoService();
