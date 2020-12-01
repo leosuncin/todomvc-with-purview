@@ -1,5 +1,6 @@
 import Purview, { SubmitEvent } from 'purview';
 
+import TodoFooter, { FilterBy } from '../components/todo-footer.component';
 import TodoItem from '../components/todo-item.component';
 import type { Todo } from '../entities/todo.entity';
 import { TodoService } from '../services/todo.service';
@@ -7,6 +8,7 @@ import { TodoService } from '../services/todo.service';
 interface TodoMVCProps {}
 interface TodoState {
   todos: Todo[];
+  filter: FilterBy;
 }
 
 class TodoMVC extends Purview.Component<TodoMVCProps, TodoState> {
@@ -21,10 +23,10 @@ class TodoMVC extends Purview.Component<TodoMVCProps, TodoState> {
     try {
       const todos = await this.service.listTodos();
 
-      return { todos };
+      return { todos, filter: 'all' };
     } catch (error) {
       console.error(error);
-      return { todos: [] };
+      return { todos: [], filter: 'all' };
     }
   }
 
@@ -68,13 +70,37 @@ class TodoMVC extends Purview.Component<TodoMVCProps, TodoState> {
     }
   }
 
+  private async clearCompletedTodosHandler(): Promise<void> {
+    try {
+      await this.service.clearCompletedTodo();
+      this.setState({
+        todos: this.state.todos.filter((todo) => !todo.completed),
+      });
+    } catch (error) {
+      console.error('clearCompletedTodosHandler', error);
+    }
+  }
+
+  get todos(): Todo[] {
+    switch (this.state.filter) {
+      case 'active':
+        return this.state.todos.filter((todo) => !todo.completed);
+
+      case 'completed':
+        return this.state.todos.filter((todo) => todo.completed);
+
+      default:
+        return this.state.todos;
+    }
+  }
+
   render(): JSX.Element {
-    const { todos } = this.state;
-    const countCompleted = todos.reduce(
+    const { todos, filter } = this.state;
+    const completedCount = todos.reduce(
       (count, todo) => count + Number(todo.completed),
       0,
     );
-    const countPending = todos.length - countCompleted;
+    const pendingCount = todos.length - completedCount;
 
     return (
       <section class="todoapp">
@@ -96,7 +122,7 @@ class TodoMVC extends Purview.Component<TodoMVCProps, TodoState> {
           <input id="toggle-all" class="toggle-all" type="checkbox" />
           <label htmlFor="toggle-all">Mark all as complete</label>
           <ul class="todo-list">
-            {todos.map((todo) => (
+            {this.todos.map((todo) => (
               <TodoItem
                 todo={todo}
                 onToggle={(completed) =>
@@ -108,28 +134,13 @@ class TodoMVC extends Purview.Component<TodoMVCProps, TodoState> {
             ))}
           </ul>
         </section>
-        <footer class="footer">
-          <span class="todo-count">
-            <strong>{countPending}</strong> item left
-          </span>
-          <ul class="filters">
-            <li>
-              <a class="selected">All</a>
-            </li>
-            <li>
-              <a href="#/active">Active</a>
-            </li>
-            <li>
-              <a href="#/completed">Completed</a>
-            </li>
-          </ul>
-          <button
-            class="clear-completed"
-            style={`display: ${countPending == 0 ? 'hidden' : 'inline'}`}
-          >
-            Clear completed
-          </button>
-        </footer>
+        <TodoFooter
+          nowShowing={filter}
+          completedCount={completedCount}
+          count={pendingCount}
+          onClearCompleted={this.clearCompletedTodosHandler.bind(this)}
+          onSwitchFilter={(filter) => this.setState({ filter })}
+        />
       </section>
     );
   }

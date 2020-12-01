@@ -34,6 +34,12 @@ export class TodoService {
     return this.repository.remove(todo);
   }
 
+  async clearCompletedTodo(): Promise<number | null | undefined> {
+    const result = await this.repository.delete({ completed: true });
+
+    return result.affected;
+  }
+
   static getInstance(): Readonly<TodoService> {
     if (!this.instance) {
       this.instance = new TodoService();
